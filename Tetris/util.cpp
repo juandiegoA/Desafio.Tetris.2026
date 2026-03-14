@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include "util.h"
 
 bool anchoValido(int ancho) {
@@ -32,4 +33,12 @@ bool comandoValido(char comando) {
     char c = convertirAMayuscula(comando);
 
     return c == 'A' || c == 'D' || c == 'S' || c == 'W' || c == 'Q';
+}
+
+int generarNumeroAleatorio(int minimo, int maximo) {
+    if (maximo < minimo) {
+        return minimo;
+    }
+
+    return minimo + (std::rand() % (maximo - minimo + 1));
 }

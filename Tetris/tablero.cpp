@@ -86,6 +86,103 @@ void Tablero::limpiarCelda(int fila, int columna) {
     celdas[fila][indiceByte] = (unsigned char)(celdas[fila][indiceByte] & (unsigned char)(~mascara));
 }
 
+bool Tablero::hayColisionConPieza(const Pieza& pieza, int nuevaFila, int nuevaColumna, int nuevaRotacion) const {
+    int filaLocal = 0;
+    int columnaLocal = 0;
+    unsigned char mascaraFila = 0;
+    unsigned char mascaraBit = 0;
+
+    for (filaLocal = 0; filaLocal < 4; filaLocal++) {
+        mascaraFila = pieza.obtenerFilaMascaraConRotacion(filaLocal, nuevaRotacion);
+
+        for (columnaLocal = 0; columnaLocal < 4; columnaLocal++) {
+            mascaraBit = (unsigned char)(1 << (3 - columnaLocal));
+
+            if ((mascaraFila & mascaraBit) != 0) {
+                int filaTablero = nuevaFila + filaLocal;
+                int columnaTablero = nuevaColumna + columnaLocal;
+
+                if (!estaDentro(filaTablero, columnaTablero)) {
+                    return true;
+                }
+
+                if (obtenerCelda(filaTablero, columnaTablero)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+void Tablero::fijarPieza(const Pieza& pieza) {
+    int filaLocal = 0;
+    int columnaLocal = 0;
+    unsigned char mascaraFila = 0;
+    unsigned char mascaraBit = 0;
+
+    for (filaLocal = 0; filaLocal < 4; filaLocal++) {
+        mascaraFila = pieza.obtenerFilaMascara(filaLocal);
+
+        for (columnaLocal = 0; columnaLocal < 4; columnaLocal++) {
+            mascaraBit = (unsigned char)(1 << (3 - columnaLocal));
+
+            if ((mascaraFila & mascaraBit) != 0) {
+                activarCelda(pieza.obtenerFila() + filaLocal, pieza.obtenerColumna() + columnaLocal);
+            }
+        }
+    }
+}
+
+bool Tablero::filaCompleta(int fila) const {
+    if (fila < 0 || fila >= alto) {
+        return false;
+    }
+
+    for (int j = 0; j < bytesPorFila; j++) {
+        if (celdas[fila][j] != 0xFF) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void Tablero::eliminarFila(int fila) {
+    int i = 0;
+    int j = 0;
+
+    if (fila < 0 || fila >= alto) {
+        return;
+    }
+
+    for (i = fila; i > 0; i--) {
+        for (j = 0; j < bytesPorFila; j++) {
+            celdas[i][j] = celdas[i - 1][j];
+        }
+    }
+
+    for (j = 0; j < bytesPorFila; j++) {
+        celdas[0][j] = 0;
+    }
+}
+
+int Tablero::limpiarFilasCompletas() {
+    int cantidad = 0;
+    int i = 0;
+
+    for (i = alto - 1; i >= 0; i--) {
+        if (filaCompleta(i)) {
+            eliminarFila(i);
+            cantidad++;
+            i++;
+        }
+    }
+
+    return cantidad;
+}
+
 bool Tablero::hayPiezaEnPosicion(const Pieza* piezaActual, int filaTablero, int columnaTablero) const {
     if (piezaActual == 0) {
         return false;
@@ -109,15 +206,12 @@ bool Tablero::hayPiezaEnPosicion(const Pieza* piezaActual, int filaTablero, int 
 }
 
 void Tablero::imprimir(const Pieza* piezaActual) const {
-    int i = 0;
-    int j = 0;
-
     std::cout << std::endl;
     std::cout << "Tablero (" << alto << " x " << ancho << ")" << std::endl;
     std::cout << std::endl;
 
-    for (i = 0; i < alto; i++) {
-        for (j = 0; j < ancho; j++) {
+    for (int i = 0; i < alto; i++) {
+        for (int j = 0; j < ancho; j++) {
             if (hayPiezaEnPosicion(piezaActual, i, j)) {
                 std::cout << "O";
             } else if (obtenerCelda(i, j)) {

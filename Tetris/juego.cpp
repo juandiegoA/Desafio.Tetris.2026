@@ -6,6 +6,7 @@ Juego::Juego() {
     tablero = 0;
     piezaActual = 0;
     salir = false;
+    gameOver = false;
 }
 
 Juego::~Juego() {
@@ -56,36 +57,35 @@ char Juego::leerAccion() const {
     return accion;
 }
 
-bool Juego::piezaCabeEnLimites(int nuevaFila, int nuevaColumna, int nuevaRotacion) const {
-    int filaLocal = 0;
-    int columnaLocal = 0;
-    unsigned char mascaraFila = 0;
-    unsigned char mascaraBit = 0;
+void Juego::crearNuevaPieza() {
+    int tipo = generarNumeroAleatorio(0, 2);
+    int columnaInicial = 0;
 
-    for (filaLocal = 0; filaLocal < 4; filaLocal++) {
-        mascaraFila = piezaActual->obtenerFilaMascaraConRotacion(filaLocal, nuevaRotacion);
-
-        for (columnaLocal = 0; columnaLocal < 4; columnaLocal++) {
-            mascaraBit = (unsigned char)(1 << (3 - columnaLocal));
-
-            if ((mascaraFila & mascaraBit) != 0) {
-                int filaTablero = nuevaFila + filaLocal;
-                int columnaTablero = nuevaColumna + columnaLocal;
-
-                if (!tablero->estaDentro(filaTablero, columnaTablero)) {
-                    return false;
-                }
-            }
-        }
+    if (piezaActual != 0) {
+        delete piezaActual;
+        piezaActual = 0;
     }
 
-    return true;
+    piezaActual = new Pieza(tipo, 0);
+    columnaInicial = (tablero->obtenerAncho() - piezaActual->obtenerAnchoActual()) / 2;
+    piezaActual->fijarColumna(columnaInicial);
+    piezaActual->fijarFila(0);
+
+    if (tablero->hayColisionConPieza(*piezaActual,
+                                     piezaActual->obtenerFila(),
+                                     piezaActual->obtenerColumna(),
+                                     piezaActual->obtenerRotacion())) {
+        gameOver = true;
+    }
 }
 
 void Juego::intentarMoverIzquierda() {
     int nuevaColumna = piezaActual->obtenerColumna() - 1;
 
-    if (piezaCabeEnLimites(piezaActual->obtenerFila(), nuevaColumna, piezaActual->obtenerRotacion())) {
+    if (!tablero->hayColisionConPieza(*piezaActual,
+                                      piezaActual->obtenerFila(),
+                                      nuevaColumna,
+                                      piezaActual->obtenerRotacion())) {
         piezaActual->fijarColumna(nuevaColumna);
     }
 }
@@ -93,7 +93,10 @@ void Juego::intentarMoverIzquierda() {
 void Juego::intentarMoverDerecha() {
     int nuevaColumna = piezaActual->obtenerColumna() + 1;
 
-    if (piezaCabeEnLimites(piezaActual->obtenerFila(), nuevaColumna, piezaActual->obtenerRotacion())) {
+    if (!tablero->hayColisionConPieza(*piezaActual,
+                                      piezaActual->obtenerFila(),
+                                      nuevaColumna,
+                                      piezaActual->obtenerRotacion())) {
         piezaActual->fijarColumna(nuevaColumna);
     }
 }
@@ -101,15 +104,25 @@ void Juego::intentarMoverDerecha() {
 void Juego::intentarMoverAbajo() {
     int nuevaFila = piezaActual->obtenerFila() + 1;
 
-    if (piezaCabeEnLimites(nuevaFila, piezaActual->obtenerColumna(), piezaActual->obtenerRotacion())) {
+    if (!tablero->hayColisionConPieza(*piezaActual,
+                                      nuevaFila,
+                                      piezaActual->obtenerColumna(),
+                                      piezaActual->obtenerRotacion())) {
         piezaActual->fijarFila(nuevaFila);
+    } else {
+        tablero->fijarPieza(*piezaActual);
+        tablero->limpiarFilasCompletas();
+        crearNuevaPieza();
     }
 }
 
 void Juego::intentarRotar() {
     int nuevaRotacion = piezaActual->obtenerSiguienteRotacion();
 
-    if (piezaCabeEnLimites(piezaActual->obtenerFila(), piezaActual->obtenerColumna(), nuevaRotacion)) {
+    if (!tablero->hayColisionConPieza(*piezaActual,
+                                      piezaActual->obtenerFila(),
+                                      piezaActual->obtenerColumna(),
+                                      nuevaRotacion)) {
         piezaActual->rotarHorario();
     }
 }
@@ -131,24 +144,26 @@ void Juego::procesarAccion(char accion) {
 void Juego::ejecutar() {
     int ancho = 0;
     int alto = 0;
-    int columnaInicial = 0;
     char accion = 0;
 
     pedirDimensiones(ancho, alto);
 
     tablero = new Tablero(ancho, alto);
-
-    // Por ahora seguimos usando la pieza O (tipo 0)
-    columnaInicial = (ancho / 2) - 1;
-    piezaActual = new Pieza(0, columnaInicial);
+    crearNuevaPieza();
 
     std::cout << std::endl;
     std::cout << "Tablero creado correctamente." << std::endl;
     std::cout << "Bytes por fila: " << tablero->obtenerBytesPorFila() << std::endl;
 
-    while (!salir) {
+    while (!salir && !gameOver) {
         tablero->imprimir(piezaActual);
         accion = leerAccion();
         procesarAccion(accion);
+    }
+
+    tablero->imprimir(piezaActual);
+
+    if (gameOver) {
+        std::cout << "GAME OVER" << std::endl;
     }
 }
