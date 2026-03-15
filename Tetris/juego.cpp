@@ -7,6 +7,8 @@ Juego::Juego() {
     piezaActual = 0;
     salir = false;
     gameOver = false;
+    lineasEliminadasTotales = 0;
+    ultimasFilasEliminadas = 0;
 }
 
 Juego::~Juego() {
@@ -57,30 +59,73 @@ char Juego::leerAccion() const {
     return accion;
 }
 
+const char* Juego::obtenerNombrePiezaActual() const {
+    if (piezaActual == 0) {
+        return "Ninguna";
+    }
+
+    if (piezaActual->obtenerTipo() == 0) {
+        return "O";
+    } else if (piezaActual->obtenerTipo() == 1) {
+        return "I";
+    } else if (piezaActual->obtenerTipo() == 2) {
+        return "T";
+    } else if (piezaActual->obtenerTipo() == 3) {
+        return "L";
+    } else if (piezaActual->obtenerTipo() == 4) {
+        return "J";
+    } else if (piezaActual->obtenerTipo() == 5) {
+        return "S";
+    } else if (piezaActual->obtenerTipo() == 6) {
+        return "Z";
+    }
+
+    return "Desconocida";
+}
+
+void Juego::mostrarEncabezado() const {
+    std::cout << std::endl;
+    std::cout << "Pieza actual: " << obtenerNombrePiezaActual() << std::endl;
+    std::cout << "Lineas eliminadas: " << lineasEliminadasTotales << std::endl;
+
+    if (ultimasFilasEliminadas > 0) {
+        std::cout << "Ultimo movimiento: se eliminaron "
+                  << ultimasFilasEliminadas
+                  << " fila(s)." << std::endl;
+    }
+}
+
 void Juego::crearNuevaPieza() {
     int tipo = generarNumeroAleatorio(0, 6);
     int columnaInicial = 0;
+    Pieza* nuevaPieza = 0;
+
+    nuevaPieza = new Pieza(tipo, 0);
+    columnaInicial = (tablero->obtenerAncho() - nuevaPieza->obtenerAnchoActual()) / 2;
+    nuevaPieza->fijarColumna(columnaInicial);
+    nuevaPieza->fijarFila(0);
+
+    if (tablero->hayColisionConPieza(*nuevaPieza,
+                                     nuevaPieza->obtenerFila(),
+                                     nuevaPieza->obtenerColumna(),
+                                     nuevaPieza->obtenerRotacion())) {
+        delete nuevaPieza;
+        nuevaPieza = 0;
+        gameOver = true;
+        return;
+    }
 
     if (piezaActual != 0) {
         delete piezaActual;
         piezaActual = 0;
     }
 
-    piezaActual = new Pieza(tipo, 0);
-    columnaInicial = (tablero->obtenerAncho() - piezaActual->obtenerAnchoActual()) / 2;
-    piezaActual->fijarColumna(columnaInicial);
-    piezaActual->fijarFila(0);
-
-    if (tablero->hayColisionConPieza(*piezaActual,
-                                     piezaActual->obtenerFila(),
-                                     piezaActual->obtenerColumna(),
-                                     piezaActual->obtenerRotacion())) {
-        gameOver = true;
-    }
+    piezaActual = nuevaPieza;
 }
 
 void Juego::intentarMoverIzquierda() {
     int nuevaColumna = piezaActual->obtenerColumna() - 1;
+    ultimasFilasEliminadas = 0;
 
     if (!tablero->hayColisionConPieza(*piezaActual,
                                       piezaActual->obtenerFila(),
@@ -92,6 +137,7 @@ void Juego::intentarMoverIzquierda() {
 
 void Juego::intentarMoverDerecha() {
     int nuevaColumna = piezaActual->obtenerColumna() + 1;
+    ultimasFilasEliminadas = 0;
 
     if (!tablero->hayColisionConPieza(*piezaActual,
                                       piezaActual->obtenerFila(),
@@ -103,6 +149,9 @@ void Juego::intentarMoverDerecha() {
 
 void Juego::intentarMoverAbajo() {
     int nuevaFila = piezaActual->obtenerFila() + 1;
+    int filasEliminadas = 0;
+
+    ultimasFilasEliminadas = 0;
 
     if (!tablero->hayColisionConPieza(*piezaActual,
                                       nuevaFila,
@@ -111,19 +160,67 @@ void Juego::intentarMoverAbajo() {
         piezaActual->fijarFila(nuevaFila);
     } else {
         tablero->fijarPieza(*piezaActual);
-        tablero->limpiarFilasCompletas();
+        filasEliminadas = tablero->limpiarFilasCompletas();
+        ultimasFilasEliminadas = filasEliminadas;
+        lineasEliminadasTotales += filasEliminadas;
         crearNuevaPieza();
     }
 }
 
 void Juego::intentarRotar() {
     int nuevaRotacion = piezaActual->obtenerSiguienteRotacion();
+    int columnaActual = piezaActual->obtenerColumna();
+    int filaActual = piezaActual->obtenerFila();
 
+    ultimasFilasEliminadas = 0;
+
+    // Intento 1: rotar en la misma posicion
     if (!tablero->hayColisionConPieza(*piezaActual,
-                                      piezaActual->obtenerFila(),
-                                      piezaActual->obtenerColumna(),
+                                      filaActual,
+                                      columnaActual,
                                       nuevaRotacion)) {
         piezaActual->rotarHorario();
+        return;
+    }
+
+    // Intento 2: wall kick a la izquierda
+    if (!tablero->hayColisionConPieza(*piezaActual,
+                                      filaActual,
+                                      columnaActual - 1,
+                                      nuevaRotacion)) {
+        piezaActual->fijarColumna(columnaActual - 1);
+        piezaActual->rotarHorario();
+        return;
+    }
+
+    // Intento 3: wall kick a la derecha
+    if (!tablero->hayColisionConPieza(*piezaActual,
+                                      filaActual,
+                                      columnaActual + 1,
+                                      nuevaRotacion)) {
+        piezaActual->fijarColumna(columnaActual + 1);
+        piezaActual->rotarHorario();
+        return;
+    }
+
+    // Intento 4: wall kick fuerte a la izquierda
+    if (!tablero->hayColisionConPieza(*piezaActual,
+                                      filaActual,
+                                      columnaActual - 2,
+                                      nuevaRotacion)) {
+        piezaActual->fijarColumna(columnaActual - 2);
+        piezaActual->rotarHorario();
+        return;
+    }
+
+    // Intento 5: wall kick fuerte a la derecha
+    if (!tablero->hayColisionConPieza(*piezaActual,
+                                      filaActual,
+                                      columnaActual + 2,
+                                      nuevaRotacion)) {
+        piezaActual->fijarColumna(columnaActual + 2);
+        piezaActual->rotarHorario();
+        return;
     }
 }
 
@@ -156,14 +253,18 @@ void Juego::ejecutar() {
     std::cout << "Bytes por fila: " << tablero->obtenerBytesPorFila() << std::endl;
 
     while (!salir && !gameOver) {
+        mostrarEncabezado();
         tablero->imprimir(piezaActual);
         accion = leerAccion();
         procesarAccion(accion);
     }
 
-    tablero->imprimir(piezaActual);
-
     if (gameOver) {
+        mostrarEncabezado();
+        tablero->imprimir(0);
         std::cout << "GAME OVER" << std::endl;
+    } else {
+        mostrarEncabezado();
+        tablero->imprimir(piezaActual);
     }
 }

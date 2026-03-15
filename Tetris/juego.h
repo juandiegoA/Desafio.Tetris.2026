@@ -11,6 +11,9 @@ private:
     bool salir;
     bool gameOver;
 
+    int lineasEliminadasTotales;
+    int ultimasFilasEliminadas;
+
     void pedirDimensiones(int& ancho, int& alto);
     char leerAccion() const;
 
@@ -21,6 +24,9 @@ private:
     void intentarMoverDerecha();
     void intentarMoverAbajo();
     void intentarRotar();
+
+    const char* obtenerNombrePiezaActual() const;
+    void mostrarEncabezado() const;
 
 public:
     Juego();
