@@ -58,7 +58,7 @@ char Juego::leerAccion() const {
 }
 
 void Juego::crearNuevaPieza() {
-    int tipo = generarNumeroAleatorio(0, 2);
+    int tipo = generarNumeroAleatorio(0, 6);
     int columnaInicial = 0;
 
     if (piezaActual != 0) {

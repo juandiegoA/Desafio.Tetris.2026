@@ -9,12 +9,14 @@ private:
     Tablero* tablero;
     Pieza* piezaActual;
     bool salir;
+    bool gameOver;
 
     void pedirDimensiones(int& ancho, int& alto);
     char leerAccion() const;
-    bool piezaCabeEnLimites(int nuevaFila, int nuevaColumna, int nuevaRotacion) const;
 
+    void crearNuevaPieza();
     void procesarAccion(char accion);
+
     void intentarMoverIzquierda();
     void intentarMoverDerecha();
     void intentarMoverAbajo();

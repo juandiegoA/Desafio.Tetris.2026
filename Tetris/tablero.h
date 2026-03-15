@@ -26,6 +26,13 @@ public:
     void activarCelda(int fila, int columna);
     void limpiarCelda(int fila, int columna);
 
+    bool hayColisionConPieza(const Pieza& pieza, int nuevaFila, int nuevaColumna, int nuevaRotacion) const;
+    void fijarPieza(const Pieza& pieza);
+
+    bool filaCompleta(int fila) const;
+    void eliminarFila(int fila);
+    int limpiarFilasCompletas();
+
     void imprimir(const Pieza* piezaActual) const;
 };
 

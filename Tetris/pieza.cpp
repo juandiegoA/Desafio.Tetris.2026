@@ -3,8 +3,12 @@
 // 0 -> O
 // 1 -> I
 // 2 -> T
+// 3 -> L
+// 4 -> J
+// 5 -> S
+// 6 -> Z
 
-static const int TOTAL_PIEZAS = 3;
+static const int TOTAL_PIEZAS = 7;
 static const int TOTAL_ROTACIONES = 4;
 
 static const unsigned char mascaras[TOTAL_PIEZAS][TOTAL_ROTACIONES][4] = {
@@ -30,19 +34,59 @@ static const unsigned char mascaras[TOTAL_PIEZAS][TOTAL_ROTACIONES][4] = {
         {0b0100, 0b1100, 0b0100, 0b0000},
         {0b0100, 0b1110, 0b0000, 0b0000},
         {0b1000, 0b1100, 0b1000, 0b0000}
+    },
+
+    // L
+    {
+        {0b1000, 0b1110, 0b0000, 0b0000},
+        {0b1100, 0b1000, 0b1000, 0b0000},
+        {0b1110, 0b0010, 0b0000, 0b0000},
+        {0b0100, 0b0100, 0b1100, 0b0000}
+    },
+
+    // J
+    {
+        {0b0010, 0b1110, 0b0000, 0b0000},
+        {0b1000, 0b1000, 0b1100, 0b0000},
+        {0b1110, 0b1000, 0b0000, 0b0000},
+        {0b1100, 0b0100, 0b0100, 0b0000}
+    },
+
+    // S
+    {
+        {0b0110, 0b1100, 0b0000, 0b0000},
+        {0b1000, 0b1100, 0b0100, 0b0000},
+        {0b0110, 0b1100, 0b0000, 0b0000},
+        {0b1000, 0b1100, 0b0100, 0b0000}
+    },
+
+    // Z
+    {
+        {0b1100, 0b0110, 0b0000, 0b0000},
+        {0b0100, 0b1100, 0b1000, 0b0000},
+        {0b1100, 0b0110, 0b0000, 0b0000},
+        {0b0100, 0b1100, 0b1000, 0b0000}
     }
 };
 
 static const int anchos[TOTAL_PIEZAS][TOTAL_ROTACIONES] = {
-    {2, 2, 2, 2},
-    {4, 1, 4, 1},
-    {3, 2, 3, 2}
+    {2, 2, 2, 2}, // O
+    {4, 1, 4, 1}, // I
+    {3, 2, 3, 2}, // T
+    {3, 2, 3, 2}, // L
+    {3, 2, 3, 2}, // J
+    {3, 2, 3, 2}, // S
+    {3, 2, 3, 2}  // Z
 };
 
 static const int altos[TOTAL_PIEZAS][TOTAL_ROTACIONES] = {
-    {2, 2, 2, 2},
-    {1, 4, 1, 4},
-    {2, 3, 2, 3}
+    {2, 2, 2, 2}, // O
+    {1, 4, 1, 4}, // I
+    {2, 3, 2, 3}, // T
+    {2, 3, 2, 3}, // L
+    {2, 3, 2, 3}, // J
+    {2, 3, 2, 3}, // S
+    {2, 3, 2, 3}  // Z
 };
 
 Pieza::Pieza(int tipoPieza, int columnaInicial) {
