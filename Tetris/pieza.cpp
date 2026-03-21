@@ -1,13 +1,5 @@
 #include "pieza.h"
 
-// 0 -> O
-// 1 -> I
-// 2 -> T
-// 3 -> L
-// 4 -> J
-// 5 -> S
-// 6 -> Z
-
 static const int TOTAL_PIEZAS = 7;
 static const int TOTAL_ROTACIONES = 4;
 

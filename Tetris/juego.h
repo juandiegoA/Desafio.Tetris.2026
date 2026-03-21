@@ -27,7 +27,6 @@ private:
 
     const char* obtenerNombrePiezaActual() const;
     void mostrarEncabezado() const;
-    void mostrarDebugPiezaActual() const;
 
 public:
     Juego();

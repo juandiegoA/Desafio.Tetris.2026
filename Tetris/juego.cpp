@@ -95,43 +95,6 @@ void Juego::mostrarEncabezado() const {
     }
 }
 
-void Juego::mostrarDebugPiezaActual() const {
-    int fila = 0;
-    int columna = 0;
-    unsigned char mascaraFila = 0;
-    unsigned char mascaraBit = 0;
-
-    if (piezaActual == 0) {
-        std::cout << "No hay pieza activa." << std::endl;
-        return;
-    }
-
-    std::cout << "Debug pieza activa:" << std::endl;
-    std::cout << "Tipo: " << obtenerNombrePiezaActual() << std::endl;
-    std::cout << "Rotacion actual: " << piezaActual->obtenerRotacion() << std::endl;
-    std::cout << "Posicion: fila=" << piezaActual->obtenerFila()
-              << " columna=" << piezaActual->obtenerColumna() << std::endl;
-    std::cout << "Mascara 4x4:" << std::endl;
-
-    for (fila = 0; fila < 4; fila++) {
-        mascaraFila = piezaActual->obtenerFilaMascara(fila);
-
-        for (columna = 0; columna < 4; columna++) {
-            mascaraBit = (unsigned char)(1 << (3 - columna));
-
-            if ((mascaraFila & mascaraBit) != 0) {
-                std::cout << "O";
-            } else {
-                std::cout << ".";
-            }
-        }
-
-        std::cout << std::endl;
-    }
-
-    std::cout << std::endl;
-}
-
 void Juego::crearNuevaPieza() {
     int tipo = generarNumeroAleatorio(0, 6);
     int columnaInicial = 0;
@@ -286,7 +249,6 @@ void Juego::ejecutar() {
 
     while (!salir && !gameOver) {
         mostrarEncabezado();
-        mostrarDebugPiezaActual();
         tablero->imprimir(piezaActual);
         accion = leerAccion();
         procesarAccion(accion);
@@ -298,7 +260,6 @@ void Juego::ejecutar() {
         std::cout << "GAME OVER" << std::endl;
     } else {
         mostrarEncabezado();
-        mostrarDebugPiezaActual();
         tablero->imprimir(piezaActual);
     }
 }
