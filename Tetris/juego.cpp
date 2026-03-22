@@ -172,50 +172,40 @@ void Juego::intentarRotar() {
     int columnaActual = piezaActual->obtenerColumna();
     int filaActual = piezaActual->obtenerFila();
 
+    int desplazamientosNormales[5] = {0, -1, 1, -2, 2};
+    int desplazamientosI[7] = {0, -1, 1, -2, 2, -3, 3};
+
+    int i = 0;
+    int nuevaColumna = 0;
+
     ultimasFilasEliminadas = 0;
 
-    if (!tablero->hayColisionConPieza(*piezaActual,
-                                      filaActual,
-                                      columnaActual,
-                                      nuevaRotacion)) {
-        piezaActual->rotarHorario();
-        return;
-    }
+    if (piezaActual->obtenerTipo() == 1) {
+        for (i = 0; i < 7; i++) {
+            nuevaColumna = columnaActual + desplazamientosI[i];
 
-    if (!tablero->hayColisionConPieza(*piezaActual,
-                                      filaActual,
-                                      columnaActual - 1,
-                                      nuevaRotacion)) {
-        piezaActual->fijarColumna(columnaActual - 1);
-        piezaActual->rotarHorario();
-        return;
-    }
+            if (!tablero->hayColisionConPieza(*piezaActual,
+                                              filaActual,
+                                              nuevaColumna,
+                                              nuevaRotacion)) {
+                piezaActual->fijarColumna(nuevaColumna);
+                piezaActual->rotarHorario();
+                return;
+            }
+        }
+    } else {
+        for (i = 0; i < 5; i++) {
+            nuevaColumna = columnaActual + desplazamientosNormales[i];
 
-    if (!tablero->hayColisionConPieza(*piezaActual,
-                                      filaActual,
-                                      columnaActual + 1,
-                                      nuevaRotacion)) {
-        piezaActual->fijarColumna(columnaActual + 1);
-        piezaActual->rotarHorario();
-        return;
-    }
-
-    if (!tablero->hayColisionConPieza(*piezaActual,
-                                      filaActual,
-                                      columnaActual - 2,
-                                      nuevaRotacion)) {
-        piezaActual->fijarColumna(columnaActual - 2);
-        piezaActual->rotarHorario();
-        return;
-    }
-
-    if (!tablero->hayColisionConPieza(*piezaActual,
-                                      filaActual,
-                                      columnaActual + 2,
-                                      nuevaRotacion)) {
-        piezaActual->fijarColumna(columnaActual + 2);
-        piezaActual->rotarHorario();
-        return;
+            if (!tablero->hayColisionConPieza(*piezaActual,
+                                              filaActual,
+                                              nuevaColumna,
+                                              nuevaRotacion)) {
+                piezaActual->fijarColumna(nuevaColumna);
+                piezaActual->rotarHorario();
+                return;
+            }
+        }
     }
 }
 
